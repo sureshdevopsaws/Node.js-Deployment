@@ -1,0 +1,33 @@
+pipeline {
+    agent any
+    
+    environment {
+        APP_NAME = "node-js-sample"
+        DOCKER_USER = "sureshpsl"
+        DOCKER_PASS = 'docker-hub-credentials'
+        IMAGE_NAME = "${DOCKER_USER}" + "/" + "${APP_NAME}"
+        IMAGE_TAG = "1.0"
+    }
+
+    stages {
+        stage('Git Clone') {
+            steps {
+                git branch: 'main', credentialsId: 'github-credentails', url: 'https://github.com/sureshdevopsaws/Node.js-Deployment.git'
+            }
+        }
+        
+        stage('Build & Push Docker Image') {
+            steps {
+                script {
+                    docker.withRegistry('',DOCKER_PASS) {
+                        docker_image = docker.build "${IMAGE_NAME}"
+                    }
+                    docker.withRegistry('',DOCKER_PASS) {
+                        docker_image.push("${IMAGE_TAG}")
+                        docker_image.push('1.0')
+                    }
+                }
+            }
+        }
+    }
+}
